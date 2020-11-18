@@ -1,0 +1,6 @@
+2020-11-18 13:43:09 : INFO : Cheking if the attribute 'entity2' exists in the project: 'SDT'
+2020-11-18 13:43:10 : INFO : Updating the attribute 'entity2' in the project: 'SDT' with a value of 'hola'
+2020-11-18 13:43:12 : INFO : Removed successfully the attribute 'entity2' from the project: 'SDT'
+2020-11-18 13:43:15 : INFO : Cheking if the attribute 'entity2' exists in the project: 'SDT'
+2020-11-18 13:43:16 : INFO : Updating the attribute 'entity2' in the project: 'SDT' with a value of 'hola'
+2020-11-18 13:43:16 : INFO : Removed successfully the attribute 'entity2' from the project: 'SDT'

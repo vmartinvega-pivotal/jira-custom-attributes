@@ -1,0 +1,3 @@
+2020-11-18 13:26:12 : INFO : Cheking if the attribute 'entity2' exists in the project: 'SDT'
+2020-11-18 13:26:13 : INFO : Adding the attribute 'entity2' in the project: 'SDT' with a value of 'hola'
+2020-11-18 13:26:13 : ERROR : Error adding the attribute. Http code: 500
