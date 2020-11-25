@@ -2,17 +2,18 @@
 
 # Default value for the attribute to change
 ATTRIBUTE="entity"
+JIRA_URL="https://jira.almpre.europe.cloudcenter.corp"
 
 while [ "$1" != "" ]; do
     case $1 in
-        -t | --token )          shift
-                                JIRA_TOKEN=$1
+        -u | --url )            shift
+                                JIRA_URL=$1
                                 ;;
         -i | --input )          INPUT_FILE=$2
                                 ;;
-        -a | --input )          ATTRIBUTE=$2
+        -a | --attribute )      ATTRIBUTE=$2
                                 ;;
-        -h | --help )           echo 'Please provide the jira token -t, attribute to change -a (default $ATTRIBUTE) and input file -i'
+        -h | --help )           echo 'Please provide the jira url -u, attribute to change -a (default $ATTRIBUTE) and input file -i'
                                 exit
                                 ;;
         * )
@@ -27,7 +28,7 @@ function toLowerCase() {
 echo "Script parameters"
 echo ""
 echo "attribute to change: $ATTRIBUTE"
-echo "jira token: $JIRA_TOKEN"
+echo "jira url: $JIRA_URL"
 echo "input file: $INPUT_FILE"
 echo ""
 
@@ -47,15 +48,24 @@ initLogs
 USERNAME=""
 PASSWORD=""
 
+echo "Please provide the credentials to access ${JIRA_URL}..."
+echo
+read -r -p "Username: " USERNAME
+read -r -s -p "Password: " PASSWORD
+echo
+
 while IFS= read -r line
 do
+  # Gets the project key
   PROJECT_KEY=$(cut -d'|' -f1 <<< $line)
+
+  # Gets the attribute entity value
   ATTRIBUTE_VALUE=$(cut -d'|' -f2 <<< $line)
 
   logMessage "Cheking if the attribute '$ATTRIBUTE' exists in the project: '$PROJECT_KEY'" "INFO"
   
   # Check if the attribute exists
-  response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" https://jira.almpre.europe.cloudcenter.corp/rest/projectproperties/1.0/property/list/$PROJECT_KEY/key/$ATTRIBUTE)
+  response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" $JIRA_URL/rest/projectproperties/1.0/property/list/$PROJECT_KEY/key/$ATTRIBUTE)
   response=(${response[@]}) # convert to array
   code=${response[-1]} # get last element (last line)
   body=${response[@]::${#response[@]}-1} # get all elements except last
@@ -72,7 +82,7 @@ do
       logMessage "Adding the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
       message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
 
-      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" https://jira.almpre.europe.cloudcenter.corp/rest/projectproperties/1.0/property/add)
+      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $JIRA_URL/rest/projectproperties/1.0/property/add)
       response=(${response[@]}) # convert to array
       code=${response[-1]} # get last element (last line)
       body=${response[@]::${#response[@]}-1} # get all elements except last
@@ -84,16 +94,17 @@ do
       fi
     else
       logMessage "Updating the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
+      message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
 
-      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" -XDELETE https://jira.almpre.europe.cloudcenter.corp/rest/projectproperties/1.0/property/remove/$PROJECT_KEY/$ATTRIBUTE)
+      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $JIRA_URL/rest/projectproperties/1.0/property/update)
       response=(${response[@]}) # convert to array
       code=${response[-1]} # get last element (last line)
       body=${response[@]::${#response[@]}-1} # get all elements except last
       if [[ $code = "200" ]]
       then
-         logMessage "Removed successfully the attribute '$ATTRIBUTE' from the project: '$PROJECT_KEY'" "INFO"
+         logMessage "Updated successfully the attribute '$ATTRIBUTE'!" "INFO"
       else
-         logMessage "Error removing the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY'. Http code: $code" "ERROR"
+         logMessage "Error updating the attribute. Http code: $code" "ERROR"
       fi
     fi
   else
