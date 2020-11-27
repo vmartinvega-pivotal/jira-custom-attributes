@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Default value for the attribute to change
-ATTRIBUTE="entity"
-JIRA_URL="https://jira.almpre.europe.cloudcenter.corp"
+ATTRIBUTE="entity" # Default value
+JIRA_URL="https://jira.almpre.europe.cloudcenter.corp" # Default value
+INPUT_FILE=""
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -24,6 +25,11 @@ done
 function toLowerCase() {
   echo "$1" | tr '[:upper:]' '[:lower:]'
 }
+
+if [[ "${INPUT_FILE:-}" == "" ]]; then
+  echo "The input file is required! Provide a value for it with (-i | --input). Exiting..."
+  exit 1
+fi
 
 echo "Script parameters"
 echo ""

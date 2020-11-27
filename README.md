@@ -43,3 +43,16 @@ Input file line example
 ```
 SDT | entity1
 ```
+
+## Log configuration
+The script can be configured with the following levels for logging: VERBOSE, DEBUG, INFO, WARN and ERROR.
+
+The logging level can be configured with the environment variable **script_logging_level**. The default value is INFO.
+
+The logs are written to the console and to a file in the **logs** folder. The created file is named as: **script_yyyy-MM-dd_hh_mm.log**
+
+Example. To execute the script with a log level of ERROR
+```
+export script_logging_level=ERROR && ./script.sh -i input_file
+```
+
