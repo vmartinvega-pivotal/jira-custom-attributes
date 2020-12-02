@@ -70,8 +70,11 @@ do
 
   logMessage "Cheking if the attribute '$ATTRIBUTE' exists in the project: '$PROJECT_KEY'" "INFO"
   
+  url="$JIRA_URL/rest/projectproperties/1.0/property/list/$PROJECT_KEY/key/$ATTRIBUTE"
+  logMessage "Accessing url: $url" "DEBUG"
+
   # Check if the attribute exists
-  response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" $JIRA_URL/rest/projectproperties/1.0/property/list/$PROJECT_KEY/key/$ATTRIBUTE)
+  response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" $url)
   response=(${response[@]}) # convert to array
   code=${response[-1]} # get last element (last line)
   body=${response[@]::${#response[@]}-1} # get all elements except last
@@ -88,7 +91,9 @@ do
       logMessage "Adding the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
       message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
 
-      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $JIRA_URL/rest/projectproperties/1.0/property/add)
+      url="$JIRA_URL/rest/projectproperties/1.0/property/add"
+      logMessage "Accessing url: $url, with message: $message" "DEBUG"
+      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $url)
       response=(${response[@]}) # convert to array
       code=${response[-1]} # get last element (last line)
       body=${response[@]::${#response[@]}-1} # get all elements except last
@@ -102,7 +107,10 @@ do
       logMessage "Updating the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
       message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
 
-      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $JIRA_URL/rest/projectproperties/1.0/property/update)
+      url="$JIRA_URL/rest/projectproperties/1.0/property/update"
+      logMessage "Accessing url: $url, with message: $message" "DEBUG"
+
+      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $url)
       response=(${response[@]}) # convert to array
       code=${response[-1]} # get last element (last line)
       body=${response[@]::${#response[@]}-1} # get all elements except last
