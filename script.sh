@@ -4,6 +4,7 @@
 ATTRIBUTE="entity" # Default value
 JIRA_URL="https://jira.almpre.europe.cloudcenter.corp" # Default value
 INPUT_FILE=""
+UPDATE="false"
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -14,7 +15,9 @@ while [ "$1" != "" ]; do
                                 ;;
         -a | --attribute )      ATTRIBUTE=$2
                                 ;;
-        -h | --help )           echo 'Please provide the jira url -u, attribute to change -a (default $ATTRIBUTE) and input file -i'
+        -o | --overwrite )      UPDATE=$2
+                                ;;
+        -h | --help )           echo 'Please provide the jira url -u, attribute to change -a (default $ATTRIBUTE), input file -i and -o if update the value (default false)'
                                 exit
                                 ;;
         * )
@@ -31,11 +34,13 @@ if [[ "${INPUT_FILE:-}" == "" ]]; then
   exit 1
 fi
 
+UPDATE=$(toLowerCase $UPDATE)
 echo "Script parameters"
 echo ""
 echo "attribute to change: $ATTRIBUTE"
 echo "jira url: $JIRA_URL"
 echo "input file: $INPUT_FILE"
+echo "update value: $UPDATE" 
 echo ""
 
 # If log level is not set it is initialized as INFO
@@ -79,7 +84,6 @@ do
   code=${response[-1]} # get last element (last line)
   body=${response[@]::${#response[@]}-1} # get all elements except last
 
-
   # Cheks the http_code
   if [[ $code = "200" ]]
   then
@@ -104,21 +108,26 @@ do
         logMessage "Error adding the attribute. Http code: $code" "ERROR"
       fi
     else
-      logMessage "Updating the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
-      message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
-
-      url="$JIRA_URL/rest/projectproperties/1.0/property/update"
-      logMessage "Accessing url: $url, with message: $message" "DEBUG"
-
-      response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $url)
-      response=(${response[@]}) # convert to array
-      code=${response[-1]} # get last element (last line)
-      body=${response[@]::${#response[@]}-1} # get all elements except last
-      if [[ $code = "200" ]]
+      if [[ $UPDATE = "true" ]]
       then
-         logMessage "Updated successfully the attribute '$ATTRIBUTE'!" "INFO"
+        logMessage "Updating the attribute '$ATTRIBUTE' in the project: '$PROJECT_KEY' with a value of '$ATTRIBUTE_VALUE'" "INFO"
+        message="{\"projectKey\":\"$PROJECT_KEY\",\"propertyKey\":\"$ATTRIBUTE\",\"propertyValue\":\"$ATTRIBUTE_VALUE\"}"
+
+        url="$JIRA_URL/rest/projectproperties/1.0/property/update"
+        logMessage "Accessing url: $url, with message: $message" "DEBUG"
+
+        response=$(curl --user $USERNAME:$PASSWORD --insecure -s -w "\n%{http_code}" --header "Content-Type: application/json" --request POST --data "$message" $url)
+        response=(${response[@]}) # convert to array
+        code=${response[-1]} # get last element (last line)
+        body=${response[@]::${#response[@]}-1} # get all elements except last
+        if [[ $code = "200" ]]
+        then
+          logMessage "Updated successfully the attribute '$ATTRIBUTE'!" "INFO"
+        else
+          logMessage "Error updating the attribute. Http code: $code" "ERROR"
+        fi
       else
-         logMessage "Error updating the attribute. Http code: $code" "ERROR"
+        logMessage "The script is configured to no overwrite the value. Check with the owner for the project key: '$PROJECT_KEY' if they were using the attribute name: '$ATTRIBUTE' previously." "WARN"
       fi
     fi
   else

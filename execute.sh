@@ -1,1 +1,1 @@
-./script.sh -i ./input_file -a entity -u  https://jira.almdev.europe.cloudcenter.corp
+./script.sh -o true -i ./input_file -a entity -u  https://jira.almdev.europe.cloudcenter.corp

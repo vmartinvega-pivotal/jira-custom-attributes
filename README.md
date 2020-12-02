@@ -9,6 +9,7 @@ The script allows to add or modify attributes in jira projects. In order to use 
 | **--url**    | Jira url | https://jira.almpre.europe.cloudcenter.corp | Yes |
 | **--input**    | Location for the input file with the information to be uploaded to Jira | input_file (in the folder where the script is executed) | Yes |
 | **--attribute**    | Attribute name to be added/updated | entity | Yes |
+| **--overwrite**    | If the attribute exists will be updated | false | No |
 
 At execution time the script will ask for the username/password to be used to connect to jira. The provided user MUST have permissions to access all projects configured in the input_file.
 
